@@ -47,14 +47,14 @@
 	\author{Siyang Sun(ss9558), Xinsheng Zhang(xz1757), Zemin Yu(zy937)}
 	\maketitle
 	\section{Business Problem}
-	Founded in 2008, Airbnb keeps changing the way people live and travel. Not only do individuals share accommodations, but they also start to connect on unique stories and lifestyles through Airbnb, which has become a symbol of the sharing economy. With its rapid expansion in the whole world, Airbnb has already advertised over 3,000,000 lodging listings in more than 65,000 cities and 191 countries up till 2017. As students at New York University (NYU), we always love to explore the city we live in. In this project, we focus on Airbnb listings in New York City (NYC), a cosmopolitan and worldwide travel destination. We believe Airbnb could give us a distinct insight into characteristics of NYC neighborhoods.
+	\noindent Founded in 2008, Airbnb keeps changing the way people live and travel. Not only do individuals share accommodations, but they also start to connect on unique stories and lifestyles through Airbnb, which has become a symbol of the sharing economy. With its rapid expansion in the whole world, Airbnb has already advertised over 3,000,000 lodging listings in more than 65,000 cities and 191 countries up till 2017. As students at New York University (NYU), we always love to explore the city we live in. In this project, we focus on Airbnb listings in New York City (NYC), a cosmopolitan and worldwide travel destination. We believe Airbnb could give us a distinct insight into characteristics of NYC neighborhoods.\\
 	
-	We would like to propose a model to predict appropriate prices for Airbnb listings in NYC. Particularly, we are interested in studying how these features would help Airbnb provide an internal tool to assist hosts in determining reasonable prices. If time is allowed, we would also like to apply natural language processing (NLP) techniques on housing reviews, and integrate them into our predictive model.
+	 \noindent We would like to propose a model to predict appropriate prices for Airbnb listings in NYC. Particularly, we are interested in studying how these features would help Airbnb provide an internal tool to assist hosts in determining reasonable prices. If time is allowed, we would also like to apply natural language processing (NLP) techniques on housing reviews, and integrate them into our predictive model.
 	
 	\section{Data}
-	We will use datasets provided by \href{http://insideairbnb.com/get-the-data.html}{Inside Airbnb} where the data is sourced from publicly available information from the Airbnb site. For this project, we will concentrate on NYC data, which is compiled on December 3rd, 2016.
+	We will use datasets provided by \href{http://insideairbnb.com/get-the-data.html}{Inside Airbnb} where the data is sourced from publicly available information from the Airbnb site. For this project, we will concentrate on NYC data, which is compiled on December 3rd, 2016.\\
 	
-	The data is separated into two datasets. We will mainly focus on \textit{listing} dataset, which records detailed listing information in NYC. It contains 40,227 unique listings and 95 features in total. The features are roughly divided into the following groups.
+	\noindent The data is separated into two datasets. We will mainly focus on \textit{listing} dataset, which records detailed listing information in NYC. It contains 40,227 unique listings and 95 features in total. The features are roughly divided into the following groups.
 	\begin{itemize}
 		\item listing: name, space, description, accommodates, etc.
 		\item host: about host, response rate, verification, etc.
@@ -64,7 +64,7 @@
 		\item \texttt{price}
 	\end{itemize}
 	
-	Specifically, our target variable \texttt{price} is continuous. From the summary table and the truncated histogram graph below, the variable has a heavy right tail, which indicates lots of outliers. 
+	\noindent Specifically, our target variable \texttt{price} is continuous. From the summary table and the truncated histogram graph below, the variable has a heavy right tail, which indicates lots of outliers. 
 	
 	\begin{table}[h!]
 		\centering
@@ -81,9 +81,9 @@
 		\caption{\texttt{price} distribution (truncated)}
 	\end{figure}
 	
-	Optionally, the other \textit{review} dataset collects detailed reviews for each listing. It contains a total of 614,127 reviews for 31,150 distinct listings.
+	\noindent Optionally, the other \textit{review} dataset collects detailed reviews for each listing. It contains a total of 614,127 reviews for 31,150 distinct listings.\\
 	
-	Upon our initial data exploration, we will face these following technical difficulties in our data mining problem:
+	\noindent Upon our initial data exploration, we will face these following technical difficulties in our data mining problem:
 	\begin{itemize}
 		\item Most of the columns (53) contains null value, and 9 of them has more than $50\%$ null. We need to figure out a reasonable way to clean null columns and impute null values.
 		\item Lots of columns (63) are natural language, which requires NLP techniques to extract features. In addition, there are entries recorded in non-English language. 
