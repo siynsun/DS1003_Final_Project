@@ -48,6 +48,8 @@ def extract_features(feature_df, binary_cols, cat_cols, text_cols, num_cols, mix
     # Binary: Drop the row if NA
     for binary_col in binary_cols:
         feature_df = feature_df[pd.notnull(feature_df[binary_col])]
+    for binary_col in binary_cols:
+        feature_df[binary_col] = feature_df[binary_col].map({'f': 0, 't': 1})
 
     # Categorical: One-hot
     feature_df = pd.get_dummies(feature_df, columns=cat_cols)
@@ -81,24 +83,24 @@ def extract_features(feature_df, binary_cols, cat_cols, text_cols, num_cols, mix
 
 if __name__ == '__main__':
     # change the direction to where your data located
-    #os.chdir('/Users/Sean/Desktop/DS1003_Final_Project')
-    #sys.path.append('/Users/Sean/Desktop/DS1003_Final_Project')
+    os.chdir('/Users/Sean/Desktop/DS1003_Final_Project')
+    sys.path.append('/Users/Sean/Desktop/DS1003_Final_Project')
 
     # select meaningful features
     binary_cols = ['host_is_superhost', 'instant_bookable']
-    cat_cols = ['host_response_time', 'zipcode', 'property_type', 'room_type', 
+    cat_cols = ['host_response_time', 'zipcode', 'property_type', 'room_type',
                 'bed_type', 'cancellation_policy']
-    text_cols = ['name', 'summary', 'space', 'description', 'neighborhood_overview', 
+    text_cols = ['name', 'summary', 'space', 'description', 'neighborhood_overview',
                  'transit', 'access', 'interaction', 'house_rules', 'host_about']
     num_cols = ['host_response_rate', 'host_listings_count',
                 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'guests_included',
-                'minimum_nights', 'maximum_nights', 'calculated_host_listings_count']
+                'minimum_nights', 'maximum_nights', 'calculated_host_listings_count', 'availability_30','availability_365']
     mix_cols = ['host_verifications', 'amenities']
     Y = ['price']
 
     # read
     clean_data = read_data('./data/listings_all.csv')
-    #clean_data = clean_data.head(3000)
+    clean_data = clean_data.head(30000)
 
     # missing imputation
     mi.text_imputation(clean_data, text_cols)
