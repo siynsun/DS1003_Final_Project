@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 import pickle
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 import missing_imputation as mi
-import os
-import sys
+#import os
+#import sys
 
 # read the data
 def read_data(file_path):
@@ -15,13 +15,14 @@ def read_data(file_path):
     na_cols = df.columns[pd.isnull(df).sum() / len(df) > 0.5].tolist()
     df.drop(na_cols, inplace=True, axis=1)
 
-    # only keep selected variables
+    # only keep selected variables (32 features)
     df = df[binary_cols +  cat_cols + text_cols + num_cols + mix_cols + Y]
 
-    # drop obs with larger than 9 features missing
-    df = df[df.isnull().sum(axis=1) <= 9]
+    # drop obs with larger than 8 features missing (25%)
+    df = df[df.isnull().sum(axis=1) < 9]
     return df
 
+# print topic top words for text features
 def print_top_words(model, feature_names, n_top_words):
     for topic_idx, topic in enumerate(model.components_):
         print("Topic #%d:" % topic_idx)
@@ -45,7 +46,7 @@ def cat_counter(df, col):
 
 # build features
 def extract_features(feature_df, binary_cols, cat_cols, text_cols, num_cols, mix_cols):
-    # Binary: Drop the row if NA
+    # Binary: Drop the row if NA; Encode 0/1
     for binary_col in binary_cols:
         feature_df = feature_df[pd.notnull(feature_df[binary_col])]
     for binary_col in binary_cols:
@@ -54,17 +55,17 @@ def extract_features(feature_df, binary_cols, cat_cols, text_cols, num_cols, mix
     # Categorical: One-hot
     feature_df = pd.get_dummies(feature_df, columns=cat_cols)
     
-    # TODO: extract text feature
+    # Extract text feature
     for text_col in text_cols:
-        tfidf_vectorizer = CountVectorizer(max_df=0.9, min_df=3, stop_words='english')
-        tfidf = tfidf_vectorizer.fit_transform(feature_df[text_col])
+        count_vectorizer = CountVectorizer(max_df=0.9, min_df=3, stop_words='english')
+        count = count_vectorizer.fit_transform(feature_df[text_col])
         lda = LatentDirichletAllocation(n_topics=10, learning_method='online',
                                         random_state=0)
-        lda_res = lda.fit_transform(tfidf)
+        lda_res = lda.fit_transform(count)
         topic = text_col + '_topic'
         feature_df[topic] = np.argmax(lda_res, axis=1)
         feature_df = feature_df.drop([text_col], 1)
-        tfidf_feature_names = tfidf_vectorizer.get_feature_names()
+        tfidf_feature_names = count_vectorizer.get_feature_names()
         print_top_words(lda, tfidf_feature_names, 10)
         
     # Mixed: One-hot
@@ -83,8 +84,8 @@ def extract_features(feature_df, binary_cols, cat_cols, text_cols, num_cols, mix
 
 if __name__ == '__main__':
     # change the direction to where your data located
-    os.chdir('/Users/Sean/Desktop/DS1003_Final_Project')
-    sys.path.append('/Users/Sean/Desktop/DS1003_Final_Project')
+    #os.chdir('/Users/Sean/Desktop/DS1003_Final_Project')
+    #sys.path.append('/Users/Sean/Desktop/DS1003_Final_Project')
 
     # select meaningful features
     binary_cols = ['host_is_superhost', 'instant_bookable']
@@ -94,13 +95,14 @@ if __name__ == '__main__':
                  'transit', 'access', 'interaction', 'house_rules', 'host_about']
     num_cols = ['host_response_rate', 'host_listings_count',
                 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'guests_included',
-                'minimum_nights', 'maximum_nights', 'calculated_host_listings_count', 'availability_30','availability_365']
+                'minimum_nights', 'maximum_nights', 'calculated_host_listings_count', 
+                'availability_30','availability_365']
     mix_cols = ['host_verifications', 'amenities']
     Y = ['price']
 
     # read
     clean_data = read_data('./data/listings_all.csv')
-    clean_data = clean_data.head(30000)
+    clean_data = clean_data.head(3000)
 
     # missing imputation
     mi.text_imputation(clean_data, text_cols)
