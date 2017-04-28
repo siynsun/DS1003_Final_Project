@@ -100,8 +100,7 @@ if __name__ == '__main__':
                  'transit', 'access', 'interaction', 'house_rules', 'host_about']
     num_cols = ['host_response_rate', 'host_listings_count',
                 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'guests_included',
-                'minimum_nights', 'maximum_nights', 'calculated_host_listings_count',
-                'availability_30','availability_365']
+                'minimum_nights', 'maximum_nights', 'calculated_host_listings_count']
     mix_cols = ['host_verifications', 'amenities']
     Y = ['price']
 
