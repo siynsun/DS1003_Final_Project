@@ -1,4 +1,5 @@
 import pickle
+import operator
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -28,9 +29,13 @@ def prepare_train_test_set(datapath, label="price",
     imp = np.array(clf.feature_importances_)
     col = list(x_train.columns.values)
     keep = []
+    imp_record = {}
     for i in range(len(imp)):
         if imp[i] > 0.001:
+            imp_record[col[i]] = imp[i]
             keep.append(col[i])
+    sorted_imp = sorted(imp_record.items(), key=operator.itemgetter(1))
+    print(sorted_imp)
     
     # transform to matrix
     x_train = x_train[keep].as_matrix()

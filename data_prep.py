@@ -3,6 +3,7 @@ import pandas as pd
 import pickle
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
+from textblob import TextBlob
 import missing_imputation as mi
 #import os
 #import sys
@@ -46,24 +47,28 @@ def cat_counter(df, col):
 
 # build features
 def extract_features(feature_df, binary_cols, cat_cols, text_cols, num_cols, mix_cols):
-    # Binary: Drop the row if NA; Encode 0/1
-    for binary_col in binary_cols:
+    # Binary: 
+    for binary_col in binary_cols: # Drop the row if NA
         feature_df = feature_df[pd.notnull(feature_df[binary_col])]
-    for binary_col in binary_cols:
+    for binary_col in binary_cols: # Encode 0/1
         feature_df[binary_col] = feature_df[binary_col].map({'f': 0, 't': 1})
 
     # Categorical: One-hot
     feature_df = pd.get_dummies(feature_df, columns=cat_cols)
     
-    # Extract text feature
-    for text_col in text_cols:
+    # Text:
+    for text_col in text_cols: # Sentiment 
+        feature_df[text_col + '_polarity'] = feature_df.apply(lambda x: 
+            TextBlob(x[text_col]).sentiment.polarity, axis=1)
+        feature_df[text_col + '_subjectivity'] = feature_df.apply(lambda x: 
+            TextBlob(x[text_col]).sentiment.subjectivity, axis=1)
+    for text_col in text_cols: # Count + LDA
         count_vectorizer = CountVectorizer(max_df=0.9, min_df=3, stop_words='english')
         count = count_vectorizer.fit_transform(feature_df[text_col])
         lda = LatentDirichletAllocation(n_topics=10, learning_method='online',
                                         random_state=0)
         lda_res = lda.fit_transform(count)
-        topic = text_col + '_topic'
-        feature_df[topic] = np.argmax(lda_res, axis=1)
+        feature_df[text_col + '_topic'] = np.argmax(lda_res, axis=1)
         feature_df = feature_df.drop([text_col], 1)
         tfidf_feature_names = count_vectorizer.get_feature_names()
         print_top_words(lda, tfidf_feature_names, 10)
