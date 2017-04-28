@@ -5,8 +5,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 from textblob import TextBlob
 import missing_imputation as mi
-#import os
-#import sys
+import os
+import sys
 
 # read the data
 def read_data(file_path):
@@ -48,8 +48,8 @@ def cat_counter(df, col):
 # build features
 def extract_features(feature_df, binary_cols, cat_cols, text_cols, num_cols, mix_cols):
     # Binary: 
-    for binary_col in binary_cols: # Drop the row if NA
-        feature_df = feature_df[pd.notnull(feature_df[binary_col])]
+    #for binary_col in binary_cols: # Drop the row if NA
+    #    feature_df = feature_df[pd.notnull(feature_df[binary_col])]
     for binary_col in binary_cols: # Encode 0/1
         feature_df[binary_col] = feature_df[binary_col].map({'f': 0, 't': 1})
 
@@ -88,11 +88,11 @@ def extract_features(feature_df, binary_cols, cat_cols, text_cols, num_cols, mix
     return feature_df
 
 if __name__ == '__main__':
-    # change the direction to where your data located
-    #os.chdir('/Users/Sean/Desktop/DS1003_Final_Project')
-    #sys.path.append('/Users/Sean/Desktop/DS1003_Final_Project')
+    ### change the direction to where your data located
+    os.chdir('/Users/Sean/Desktop/DS1003_Final_Project')
+    sys.path.append('/Users/Sean/Desktop/DS1003_Final_Project')
 
-    # select meaningful features
+    ### select meaningful features
     binary_cols = ['host_is_superhost', 'instant_bookable']
     cat_cols = ['host_response_time', 'zipcode', 'property_type', 'room_type',
                 'bed_type', 'cancellation_policy']
@@ -100,26 +100,49 @@ if __name__ == '__main__':
                  'transit', 'access', 'interaction', 'house_rules', 'host_about']
     num_cols = ['host_response_rate', 'host_listings_count',
                 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'guests_included',
-                'minimum_nights', 'maximum_nights', 'calculated_host_listings_count', 
+                'minimum_nights', 'maximum_nights', 'calculated_host_listings_count',
                 'availability_30','availability_365']
     mix_cols = ['host_verifications', 'amenities']
     Y = ['price']
 
-    # read
+    ### read data
     clean_data = read_data('./data/listings_all.csv')
     clean_data = clean_data.head(3000)
 
-    # missing imputation
-    mi.text_imputation(clean_data, text_cols)
-    mi.mean_imputation(clean_data, num_cols)
 
-    # feature engineering
+    ### missing imputation
+
+    # text imputation feature: transit, summary, access, house_rules, host_about, interaction, neighborhood_overview, description, space
+    mi.text_imputation(clean_data, text_cols)
+
+    # mode imputation feature: 'host_is_superhost', 'instant_bookable'
+    mi.mode_imputation(clean_data, binary_cols)
+
+    # knn imputation feature: 'host_is_superhost', 'host_response_time', 'zipcode', 'host_response_rate', 'host_listings_count', 'bathrooms', 'bedrooms', 'beds'
+    clean_data = mi.knn_imputation(clean_data, 'zipcode', 3, cat_cols, num_cols)
+    clean_data = mi.knn_imputation(clean_data, 'host_response_time', 3, cat_cols, num_cols)
+    clean_data = mi.knn_imputation(clean_data, 'host_response_rate', 3, cat_cols, num_cols)
+    clean_data = mi.knn_imputation(clean_data, 'host_listings_count', 3, cat_cols, num_cols)
+
+    # replace 0 count of bathrooms, bedrooms, beds to np.nan
+    clean_data['bathrooms'].replace(0, np.nan)
+    clean_data['bedrooms'].replace(0, np.nan)
+    clean_data['beds'].replace(0, np.nan)
+    clean_data = mi.knn_imputation(clean_data, 'bathrooms', 3, cat_cols, num_cols)
+    clean_data = mi.knn_imputation(clean_data, 'bedrooms', 3, cat_cols, num_cols)
+    clean_data = mi.knn_imputation(clean_data, 'beds', 3, cat_cols, num_cols)
+
+    # validate
+    if clean_data.columns[pd.isnull(clean_data).sum() / len(clean_data) > 0].tolist() == []:
+        print ("All missing values have been filled")
+
+    ### feature engineering
     #to do: missing indicator, mvp, .., create new features
 
-    # encoding
+    ### encoding
     encoded_df = extract_features(clean_data,binary_cols,cat_cols,text_cols,num_cols,mix_cols)
 
-    # out
+    ### output the cleaned, encoded dataset for modeling
     out = open('./data/encoded_df.pkl', 'wb')
     pickle.dump(encoded_df, out)
     out.close()
