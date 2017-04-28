@@ -2,7 +2,7 @@ import sys
 import os
 os.chdir('/Users/Sean/Desktop/DS1003_Final_Project')
 sys.path.append('/Users/Sean/Desktop/DS1003_Final_Project')
-#from importlib import reload
+from importlib import reload
 #reload(util)
 import util
 from util import regression_loss
@@ -12,7 +12,8 @@ from sklearn.model_selection import GridSearchCV
 
 
 # read the data
-x_train, x_test, y_train, y_test = util.prepare_train_test_set('./data/encoded_df.pkl')
+datapath = './data/encoded_df.pkl'
+x_train, x_valid, x_test, y_train, y_valid, y_test = util.prepare_train_test_set(datapath)
 
 
 # choose model
