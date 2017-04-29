@@ -5,6 +5,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 from textblob import TextBlob
 import missing_imputation as mi
+import feature_engineering as fg
+from importlib import reload
+#reload(fg)
 import os
 import sys
 
@@ -133,13 +136,25 @@ if __name__ == '__main__':
 
     # validate
     if clean_data.columns[pd.isnull(clean_data).sum() / len(clean_data) > 0].tolist() == []:
-        print ("All missing values have been filled")
+        print ("**All missing values have been filled**")
 
     ### feature engineering
-    #to do: missing indicator, mvp, .., create new features
+
+    # deal with outliers
+    clean_data = fg.del_outliers(clean_data)
+    print("**Outliers have been deleted**")
+
+    # deal with skewness
+    clean_data = fg.log_skewness(clean_data, num_cols, Y)
+    print("**Skewed features have been transformed**")
 
     ### encoding
     encoded_df = extract_features(clean_data,binary_cols,cat_cols,text_cols,num_cols,mix_cols)
+    print("**Data has been encoded**")
+
+    # standardization
+    encoded_df = fg.standardize_df(encoded_df)
+    print("**Data has been standardized**")
 
     ### output the cleaned, encoded dataset for modeling
     out = open('./data/encoded_df.pkl', 'wb')
