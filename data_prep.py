@@ -153,7 +153,7 @@ if __name__ == '__main__':
     print("**Data has been encoded**")
 
     # standardization
-    encoded_df = fg.standardize_df(encoded_df)
+    encoded_df = fg.normalize_df(encoded_df)
     print("**Data has been standardized**")
 
     ### output the cleaned, encoded dataset for modeling
