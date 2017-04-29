@@ -2,6 +2,7 @@
 from sklearn import preprocessing
 from scipy import stats
 import numpy as np
+import math
 
 # check skewness for all numerical variables(including price) and log transform skewed numeric features
 def log_skewness(data, num_cols, Y):
@@ -49,6 +50,15 @@ def standardize_df(data):
             mean = np.mean(data[col])
             std = np.std(data[col] )
             data[col] = data[col].apply(lambda x: (x - mean) / std)
+    return data
+
+
+
+def normalize_df(data):
+    for col in data.columns.tolist():
+        if col != 'price': # not standardize target
+            data_col_max, data_col_min = [data[col].max(axis=0), data[col].min(axis=0)]
+            data[col] = data[col].apply(lambda x: x - data_col_min) / (data_col_max - data_col_min)
     return data
 
 
