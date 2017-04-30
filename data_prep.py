@@ -92,24 +92,24 @@ def extract_features(feature_df, binary_cols, cat_cols, text_cols, num_cols, mix
 
 if __name__ == '__main__':
     ### change the direction to where your data located
-    os.chdir('/Users/Sean/Desktop/DS1003_Final_Project')
-    sys.path.append('/Users/Sean/Desktop/DS1003_Final_Project')
+    #os.chdir('/Users/Sean/Desktop/DS1003_Final_Project')
+    #sys.path.append('/Users/Sean/Desktop/DS1003_Final_Project')
 
-    ### select meaningful features
+### select meaningful features
     binary_cols = ['host_is_superhost', 'instant_bookable']
     cat_cols = ['host_response_time', 'zipcode', 'property_type', 'room_type',
                 'bed_type', 'cancellation_policy']
     text_cols = ['name', 'summary', 'space', 'description', 'neighborhood_overview',
                  'transit', 'access', 'interaction', 'house_rules', 'host_about']
-    num_cols = ['host_response_rate', 'host_listings_count',
+    num_cols = ['host_response_rate', 'host_listings_count', 'extra_people',
                 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'guests_included',
-                'minimum_nights', 'maximum_nights', 'calculated_host_listings_count']
+                'minimum_nights', 'maximum_nights', 'calculated_host_listings_count', 'longitude', 'latitude']
     mix_cols = ['host_verifications', 'amenities']
     Y = ['price']
 
     ### read data
     clean_data = read_data('./data/listings_all.csv')
-    clean_data = clean_data.head(3000)
+    #clean_data = clean_data.head(3000)
 
     ### missing imputation
 
@@ -147,6 +147,10 @@ if __name__ == '__main__':
     clean_data = fg.log_skewness(clean_data, num_cols, Y)
     print("**Skewed features have been transformed**")
 
+    # create new  features
+    clean_data = fg.create_new_feature(clean_data)
+    print("**New features have been created**")
+
     ### encoding
     encoded_df = extract_features(clean_data,binary_cols,cat_cols,text_cols,num_cols,mix_cols)
     print("**Data has been encoded**")
@@ -156,14 +160,20 @@ if __name__ == '__main__':
     encoded_df = fg.normalize_df(encoded_df)
     print("**Data has been standardized**")
 
+    # drop longitude and latitude
+    encoded_df = encoded_df.drop('longitude', 1)
+    encoded_df = encoded_df.drop('latitude', 1)
+
     # divide dataset to two part by room_type
     encoded_entire = encoded_df[encoded_df['room_type_Entire home/apt'] == 1]
+    encoded_entire = encoded_entire.drop('room_type_Entire home/apt', 1)
     encoded_entire = encoded_entire.drop('room_type_Private room', 1)
     encoded_entire = encoded_entire.drop('room_type_Shared room', 1)
 
     encoded_others = encoded_df[encoded_df['room_type_Entire home/apt'] != 1]
     encoded_others = encoded_others.drop('room_type_Entire home/apt', 1)
     encoded_others = encoded_others.drop('room_type_Shared room', 1)
+
 
     ### output the cleaned, encoded dataset for modeling
     out1 = open('./data/encoded_entire.pkl', 'wb')
