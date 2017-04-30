@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
-from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.metrics import r2_score, mean_squared_error
 
 # divide the dataset to train dataset and test data set
@@ -24,7 +24,7 @@ def prepare_train_test_set(datapath, label="price",
                                                           random_state=0)
     
     # feature importance
-    clf = ExtraTreesClassifier(random_state = 0)
+    clf = ExtraTreesRegressor(random_state = 0)
     clf = clf.fit(x_train, y_train)
     imp = np.array(clf.feature_importances_)
     col = list(x_train.columns.values)
