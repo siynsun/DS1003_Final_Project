@@ -156,12 +156,14 @@ if __name__ == '__main__':
     encoded_df = fg.normalize_df(encoded_df)
     print("**Data has been standardized**")
 
-
     # divide dataset to two part by room_type
-    encoded_entire = encoded_df[encoded_df['room_type_Entire home/apt'] == 1] # 287 features
-    encoded_others = encoded_df[encoded_df['room_type_Entire home/apt'] != 1]
-    encoded_others = encoded_others.drop('room_type_Entire home/apt', 1) # 286 features
+    encoded_entire = encoded_df[encoded_df['room_type_Entire home/apt'] == 1]
+    encoded_entire = encoded_entire.drop('room_type_Private room', 1)
+    encoded_entire = encoded_entire.drop('room_type_Shared room', 1)
 
+    encoded_others = encoded_df[encoded_df['room_type_Entire home/apt'] != 1]
+    encoded_others = encoded_others.drop('room_type_Entire home/apt', 1)
+    encoded_others = encoded_others.drop('room_type_Shared room', 1)
 
     ### output the cleaned, encoded dataset for modeling
     out1 = open('./data/encoded_entire.pkl', 'wb')
@@ -172,6 +174,9 @@ if __name__ == '__main__':
 
     out1.close()
     out2.close()
+
+
+
 
 
 
