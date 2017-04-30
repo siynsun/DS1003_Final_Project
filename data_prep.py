@@ -111,7 +111,6 @@ if __name__ == '__main__':
     clean_data = read_data('./data/listings_all.csv')
     clean_data = clean_data.head(3000)
 
-
     ### missing imputation
 
     # text imputation feature: transit, summary, access, house_rules, host_about, interaction, neighborhood_overview, description, space
@@ -152,11 +151,27 @@ if __name__ == '__main__':
     encoded_df = extract_features(clean_data,binary_cols,cat_cols,text_cols,num_cols,mix_cols)
     print("**Data has been encoded**")
 
-    # standardization
+    # standardize and normalize data
+    encoded_df = fg.standardize_df(encoded_df)
     encoded_df = fg.normalize_df(encoded_df)
     print("**Data has been standardized**")
 
+
+    # divide dataset to two part by room_type
+    encoded_entire = encoded_df[encoded_df['room_type_Entire home/apt'] == 1] # 287 features
+    encoded_others = encoded_df[encoded_df['room_type_Entire home/apt'] != 1]
+    encoded_others = encoded_others.drop('room_type_Entire home/apt', 1) # 286 features
+
+
     ### output the cleaned, encoded dataset for modeling
-    out = open('./data/encoded_df.pkl', 'wb')
-    pickle.dump(encoded_df, out)
-    out.close()
+    out1 = open('./data/encoded_entire.pkl', 'wb')
+    pickle.dump(encoded_entire, out1)
+
+    out2 = open('./data/encoded_others.pkl', 'wb')
+    pickle.dump(encoded_others, out2)
+
+    out1.close()
+    out2.close()
+
+
+
