@@ -73,60 +73,27 @@ def normalize_df(data):
 
 
 # create feature: distance to subway
-'''
-data source: https://data.ny.gov/Transportation/NYC-Transit-Subway-Entrance-And-Exit-Data/i9wp-a4ja
-new feature created: count_near_subway, dist_to_nearest_subway
-'''
-def create_subway_feature(data):
 
+
+def prepare_subway_data():
+    '''
+    data source: https://data.ny.gov/Transportation/NYC-Transit-Subway-Entrance-And-Exit-Data/i9wp-a4ja
+    '''
     # read external subway dataset
     subway = pd.read_csv('./data/subway.csv')
     useful_column = ['Station Longitude', 'Station Latitude', 'Station Name']
     subway = subway[useful_column]
     subway = subway.dropna()
     subway = subway.drop_duplicates()
-
-    data = data.reset_index(drop=True)
     subway = subway.reset_index(drop=True)
 
-    # create two new feature
-    data['count_near_subway'] = np.zeros(len(data))
-    data['dist_to_nearest_subway'] = np.zeros(len(data))
-    data['dist_to_nearest_subway'] = 1600
-
-    # set up threshold, point to point distance, unit: meters (i.e. 0.25 miles)
-    dist_to_subway = 400
-    for i in range(data.shape[0]):
-        # house location
-        lat1 = data['latitude'][i]
-        lon1 = data['longitude'][i]
-        min_dist = 1600
-        print (i)
-        for j in range(subway.shape[0]):
-            # subway location
-            lat2 = subway['Station Latitude'][j]
-            lon2 = subway['Station Longitude'][j]
-
-            # args order is super important
-            dist = gpxpy.geo.haversine_distance(lat1, lon1, lat2, lon2)
-
-            if dist <= dist_to_subway:
-                data['count_near_subway'][i] += 1
-
-            if dist < min_dist:
-                data['dist_to_nearest_subway'][i] = dist
-                min_dist = dist
-
-    return (data)
+    return (subway)
 
 
-# create feature: distance to park
-'''
-data source: https://data.cityofnewyork.us/Recreation/NYC-Parks-Public-Events-Upcoming-14-Days/w3wp-dpdi
-new feature created: count_near_park, dist_to_nearest_park
-'''
-def create_park_feature(data):
-
+def prepare_park_data():
+    '''
+    data source: https://data.cityofnewyork.us/Recreation/NYC-Parks-Public-Events-Upcoming-14-Days/w3wp-dpdi
+    '''
     # read external park dataset
     park = pd.read_json('./data/park.json')
     park = pd.DataFrame(park)
@@ -145,42 +112,71 @@ def create_park_feature(data):
     park['latitude'] = park['latitude'].astype('float64')
     park['longitude'] = park['longitude'].astype('float64')
 
+    return (park)
+
+
+
+def create_new_feature(data):
+    '''
+    subway feature created: count_near_subway, dist_to_nearest_subway
+    park feature created: count_near_park, dist_to_nearest_park
+    '''
+
+    park = prepare_park_data()
+    subway = prepare_subway_data()
+
     data = data.reset_index(drop=True)
 
-    # create two new feature
+    # create two subway features
+    data['count_near_subway'] = np.zeros(len(data))
+    data['dist_to_nearest_subway'] = np.zeros(len(data))
+    data['dist_to_nearest_subway'] = 1600
+
+    # create two park features
     data['count_near_park'] = np.zeros(len(data))
     data['dist_to_nearest_park'] = np.zeros(len(data))
     data['dist_to_nearest_park'] = 1600
 
-    # set threshold of distance to park, we claim all point to point distance, unit: meters
+    # set up threshold, point to point distance, unit: meters (i.e. 0.25 miles)
+    dist_to_subway = 400
     dist_to_park = 800
 
     for i in range(data.shape[0]):
         # house location
-        lat1 = data['latitude'].ix[i]
-        lon1 = data['longitude'].ix[i]
-        min_dist = 1600
+        lat1 = data['latitude'][i]
+        lon1 = data['longitude'][i]
+        min_dist12 = 1600
+        min_dist13 = 1600
         print (i)
-        for j in range(park.shape[0]):
+        for j in range(subway.shape[0]):
             # subway location
-            lat2 = park['latitude'].ix[j]
-            lon2 = park['longitude'].ix[j]
+            lat2 = subway['Station Latitude'][j]
+            lon2 = subway['Station Longitude'][j]
 
-            dist = gpxpy.geo.haversine_distance(lat1, lon1, lat2, lon2)
+            # args order is super important
+            dist12 = gpxpy.geo.haversine_distance(lat1, lon1, lat2, lon2)
 
-            if dist <= dist_to_park:
-                data['count_near_park'].ix[i] += 1
+            if dist12 <= dist_to_subway:
+                data['count_near_subway'][i] += 1
 
-            if dist < min_dist:
-                data['dist_to_nearest_park'].ix[i] = dist
-                min_dist = dist
+            if dist12 < min_dist12:
+                data['dist_to_nearest_subway'][i] = dist12
+                min_dist12 = dist12
+
+            try:
+                lat3 = park['latitude'][j]
+                lon3 = park['longitude'][j]
+                dist13 = gpxpy.geo.haversine_distance(lat1, lon1, lat3, lon3)
+                if dist13 <= dist_to_park:
+                    data['count_near_park'][i] += 1
+
+                if dist13 < min_dist13:
+                    data['dist_to_nearest_park'][i] = dist13
+                    min_dist13 = dist13
+            except KeyError:
+                continue
 
     return (data)
-
-
-
-
-
 
 
 '''
@@ -188,5 +184,4 @@ datapath = './data/encoded_others.pkl'
 pkl_file = open(datapath, 'rb')
 dataset = pickle.load(pkl_file)
 '''
-
 
