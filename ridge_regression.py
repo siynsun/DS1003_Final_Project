@@ -1,35 +1,32 @@
-import sys
-import os
-os.chdir('/Users/Sean/Desktop/DS1003_Final_Project')
-sys.path.append('/Users/Sean/Desktop/DS1003_Final_Project')
-from importlib import reload
-#reload(util)
 import util
-from util import regression_loss
-from sklearn.kernel_ridge import KernelRidge
+import numpy as np
+from sklearn.linear_model import Ridge, Lasso
 from sklearn.model_selection import GridSearchCV
 
-
-
 # read the data
-datapath = './data/encoded_df.pkl'
-x_train, x_valid, x_test, y_train, y_valid, y_test = util.prepare_train_test_set(datapath)
+datapath = './data/df.p'
+x_cv, x_test, y_cv, y_test = util.prepare_train_test_set(datapath)
 
+# exponential
+#y_cv = np.exp(y_cv)
+#y_test = np.exp(y_test)
 
 # choose model
-clf = KernelRidge()
+clf = Ridge(max_iter=3000)
 
-# grid search for the best fit parameters
+# parameters
 param_grid = {
-    'alpha' : [0.05, 0.1]
+    'alpha': np.logspace(-2, 4, num=13)
 }
 
-CV_clf = GridSearchCV(estimator=clf, param_grid=param_grid, cv=2)
-CV_clf.fit(x_train[1:100,:], y_train[1:100])
-print('The best parameters are: \n %s' %CV_clf.best_params_)
+# grid search
+CV_clf = GridSearchCV(estimator=clf, param_grid=param_grid, cv=2, 
+                      scoring='neg_mean_squared_error')
+CV_clf.fit(x_cv, y_cv)
+CV_result = CV_clf.cv_results_
+best_score = np.sqrt(-CV_clf.best_score_)
+print('The best parameters are: %s' %CV_clf.best_params_)
+print('The best RMSE is: %.3f' %best_score)
 
-
-# run model and return loss
-train_loss, test_loss = util.quick_test_model(x_train[1:100,:], x_test[1:100,:], y_train[1:100], y_test[1:100], CV_clf, regression_loss)
-
-print("Train loss is %s, \n Test loss is %s  " % (train_loss, test_loss))
+# visualizing purpose
+rmse_list = np.sqrt(-CV_result['mean_test_score'])
